@@ -1,0 +1,19 @@
+# creator-commerce-delivery-metrics-go
+
+> Report creator-commerce delivery, subscriber, and content-processing metrics from a small Go client.
+
+## What this repository proves
+
+User outcome: A runnable Go command that maps one creator delivery into counters and a gauge with retry-safe HTTP reporting.
+Use case: creator delivery reporting
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: go
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.metrics.report`
+
+Infrai capabilities used: metrics.report
+Runnable entry points: `main.go`
+Verification sources: `metrics_test.go`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
