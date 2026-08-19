@@ -1,18 +1,18 @@
 # Report creator-commerce delivery metrics
 
-Run the example from the command line. It reports three business signals for one digital-asset delivery: delivery count, asset bytes, and the processed state for a subscriber update.
+Run this from the command line to see it work. It reports three business signals for a single digital-asset delivery: how many times it was delivered, the asset byte size, and whether a subscriber update was processed.
 
-Infrai keeps this boundary to one key and one small REST client. The code uses `infrai.metrics.report` as the domain call, while the transport sends `POST /v1/metrics/report` with the `{ok, data, error, metadata}` envelope.
+Infrai keeps that boundary to one key and one small REST client. The code calls `infrai.metrics.report` as the domain call, and the transport sends `POST /v1/metrics/report` with the `{ok, data, error, metadata}` envelope.
 
 ## Run the decision locally
 
-The input is a `delivery` with `CreatorID`, `AssetID`, `SubscriberID`, `Bytes`, and `Processed`. A processed delivery emits state `delivered`; an unprocessed one emits `rejected`. The focused test checks that decision:
+The input is a `delivery` with `CreatorID`, `AssetID`, `SubscriberID`, `Bytes`, and `Processed`. A processed delivery emits state `delivered`; an unprocessed one emits `rejected`. The focused test asserts that decision:
 
 ```bash
 go test ./... -run TestDeliveryMetricsMarksUnprocessedAssetRejected
 ```
 
-To send the sample request, export a key and run the executable:
+To fire the sample request, export a key and run the binary:
 
 ```bash
 export INFRAI_API_KEY=your-key
@@ -27,23 +27,23 @@ reported delivered asset metrics
 
 ## The request boundary
 
-`reportDelivery` turns one domain event into three `metrics.report` calls. Each body contains only the metric `type`, `name`, `value`, and `tags`. Counters use `type: "counter"`; the byte reading uses `type: "gauge"`.
+`reportDelivery` turns one domain event into three `metrics.report` calls. Each body carries only the metric `type`, `name`, `value`, and `tags`. Counters use `type: "counter"`; the byte reading uses `type: "gauge"`.
 
-Every write has an `Idempotency-Key` derived from the creator, asset, subscriber, byte count, and metric position. A repeated HTTP attempt therefore carries the same request identity. The client also sets the method explicitly, reads the success envelope, returns the server error, and honors `Retry-After` during exponential backoff for HTTP 429.
+Every write has an `Idempotency-Key` derived from creator, asset, subscriber, byte count, and metric position. A retried HTTP attempt therefore keeps the same request identity, so the write is idempotent. The client also sets the method explicitly, reads the success envelope, returns the server error, and honors `Retry-After` during exponential backoff on HTTP 429.
 
-The sample stops at metric reporting. It does not pretend to be a queue or a content processor: `Processed` is the handoff from that workflow, and the resulting state is the observable decision.
+This sample stops at metric reporting. It is not a queue or a content processor: `Processed` is the handoff from that workflow, and the resulting state is the observable decision we cared about after the last missed-job page.
 
 ## Files
 
 - `main.go` is the runnable command and its sample delivery.
-- `metrics.go` contains the decision model and the minimal HTTP client.
+- `metrics.go` holds the decision model and the minimal HTTP client.
 - `metrics_test.go` covers the rejected-state business rule.
 
 MIT licensed.
 
 ## Going to production: Creator Commerce Delivery Metrics Go
 
-The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Creator Commerce Delivery Metrics Go.
+The example above is intentionally minimal. For real use, wire up a few things. The notes below apply to Creator Commerce Delivery Metrics Go.
 
 **Account & key**
 
